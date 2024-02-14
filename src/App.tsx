@@ -6,7 +6,6 @@ import { useMqttClient } from "./hooks/use-mqtt-client.ts";
 
 function App() {
   const {
-    client,
     connect,
     disconnect,
     subscribe,
@@ -37,7 +36,7 @@ function App() {
         />
         connect : {isConnected ? "connected" : "not connected yet"}
       </div>
-      {client && isConnected && (
+      {isConnected && (
         <>
           <Publish publish={publish} />
           <div>
