@@ -1,24 +1,28 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { isCallable } from "../utils/is-callable.ts";
 
 export function usePersistState<S>(
   key: string,
-  defaultValue: S,
+  defaultValue: S | (() => S),
 ): [S, Dispatch<SetStateAction<S>>];
 export function usePersistState<S = undefined>(
   key: string,
 ): [S | undefined, Dispatch<SetStateAction<S | undefined>>];
 
-export function usePersistState<S>(key: string, defaultValue?: S) {
-  const item = localStorage.getItem(key);
-  let init = defaultValue;
+export function usePersistState<S>(key: string, defaultValue?: S | (() => S)) {
+  const [value, setValue] = useState<S | undefined>(() => {
+    const item = localStorage.getItem(key);
 
-  try {
-    init = item ? JSON.parse(item) : undefined;
-  } catch (e) {
-    /* empty */
-  }
-
-  const [value, setValue] = useState<S | undefined>(init);
+    try {
+      return item
+        ? JSON.parse(item)
+        : isCallable(defaultValue)
+          ? defaultValue()
+          : defaultValue;
+    } catch (e) {
+      return item;
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem(
