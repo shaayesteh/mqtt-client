@@ -1,6 +1,7 @@
 import { useReducer } from "react";
-import mqtt, { MqttClient } from "mqtt";
+import mqtt, { MqttClient, Packet } from "mqtt";
 import { useMessages } from "./use-messages.tsx";
+import { usePersistState } from "./use-persist-state.tsx";
 
 type IdleState = {
   state: "idle";
@@ -144,6 +145,7 @@ export type ConnectArgs = {
 export function useMqttClient({ onConnect }: UseMqttClientArgs = {}) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const { onMessageReceived, ...restUseMessages } = useMessages();
+  const [topics, setTopics] = usePersistState<string[]>("topics", []);
 
   function connect({ address }: ConnectArgs) {
     try {
@@ -186,10 +188,74 @@ export function useMqttClient({ onConnect }: UseMqttClientArgs = {}) {
     }
   }
 
+  async function subscribe(topic: string) {
+    return new Promise<string>((res, rej) => {
+      if (state.state !== "connected") {
+        rej("not connected");
+        return;
+      }
+      state.client.subscribe(topic, (err, granted) => {
+        if (err) {
+          rej(err);
+          return;
+        }
+
+        if (!granted) {
+          rej("not granted access");
+          return;
+        }
+
+        setTopics((topics) => [...topics, ...granted.map((g) => g.topic)]);
+        res(topic);
+      });
+    });
+  }
+
+  function unsubscribe(topic: string) {
+    return new Promise((res, rej) => {
+      if (state.state !== "connected") {
+        rej("not connected");
+        return;
+      }
+      state.client.unsubscribe(topic, (err) => {
+        if (err) {
+          rej(err);
+          return;
+        }
+
+        setTopics((topics) => topics.filter((t) => t !== topic));
+        res(topic);
+      });
+    });
+  }
+
+  function publish(topic: string, message: string) {
+    return new Promise<Packet | undefined>((res, rej) => {
+      if (state.state !== "connected") {
+        rej("not connected");
+        return;
+      }
+
+      state.client.publish(topic, message, (err, packet) => {
+        console.log({ err, packet });
+        if (err) {
+          rej(err);
+          return;
+        }
+
+        res(packet);
+      });
+    });
+  }
+
   return {
     ...state,
     connect,
     disconnect,
+    subscribedTopics: topics,
+    subscribe,
+    unsubscribe,
+    publish,
     ...restUseMessages,
   };
 }

@@ -1,41 +1,39 @@
-import { useState } from "react";
-import { MqttClient } from "mqtt";
+import { useForm } from "react-hook-form";
 
 export type SubscribeProps = {
-  client: MqttClient;
+  subscribe: (topic: string) => Promise<string>;
 };
 
-export function Subscribe({ client }: SubscribeProps) {
-  const [topic, setTopic] = useState("");
+export type SubscribeForm = {
+  topic: string;
+};
 
-  function subscribe() {
-    client.subscribe("test/alish/response", (err, granteds) => {
-      if (err) {
+export function Subscribe({ subscribe }: SubscribeProps) {
+  const { handleSubmit, register, reset } = useForm<SubscribeForm>();
+
+  function onSubmit(data: SubscribeForm) {
+    subscribe(data.topic)
+      .then((topic) => {
+        alert(`subscribe ${topic}`);
+      })
+      .catch(() => {
         alert("something went wrong for subscribing");
-        return;
-      }
-
-      if (!granteds) {
-        console.log("nothing granted");
-        return;
-      }
-
-      for (const granted of granteds) {
-        alert(`granted access to ${granted.topic}`);
-      }
-    });
+      })
+      .finally(reset);
   }
 
   return (
-    <div style={{ border: "1px solid black" }}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      style={{ border: "1px solid black" }}
+    >
       <label htmlFor="topic">Topic</label>
       <input
-        name="topic"
-        id="topic"
-        value={topic}
-        onChange={(e) => setTopic(e.target.value)}
+        {...register("topic", {
+          required: true,
+        })}
       />
-      <button onClick={subscribe}>subscribe</button>
-    </div>
+      <button type="submit">subscribe</button>
+    </form>
   );
 }

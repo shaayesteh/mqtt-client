@@ -9,6 +9,10 @@ function App() {
     client,
     connect,
     disconnect,
+    subscribe,
+    unsubscribe,
+    publish,
+    subscribedTopics,
     isConnecting,
     isConnected,
     messages,
@@ -35,8 +39,20 @@ function App() {
       </div>
       {client && isConnected && (
         <>
-          <Publish client={client} />
-          <Subscribe client={client} />
+          <Publish publish={publish} />
+          <div>
+            subscribed topics:
+            {subscribedTopics.length === 0 && "no subscribed topics"}
+            <ul>
+              {subscribedTopics.map((t) => (
+                <li key={t}>
+                  {t}{" "}
+                  <button onClick={() => unsubscribe(t)}>unsubscribe</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <Subscribe subscribe={subscribe} />
           <Messages
             filter="test/+/response"
             messages={messages}
