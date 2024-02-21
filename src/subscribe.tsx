@@ -32,6 +32,7 @@ export function Subscribe({ subscribe }: SubscribeProps) {
         {...register("topic", {
           required: true,
         })}
+        id="topic"
       />
       <button type="submit">subscribe</button>
     </form>

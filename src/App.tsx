@@ -27,11 +27,15 @@ function App() {
       <div>
         <Connect
           isConnecting={isConnecting}
-          onConnect={connect}
+          onConnect={(data) => connect({ address: data.fullAddress })}
           isConnected={isConnected}
           onDisconnect={disconnect}
           defaultValues={{
-            address: localStorage.getItem("address") || "",
+            host: "ws://",
+            address: "",
+            port: "8083",
+            path: "",
+            fullAddress: "",
           }}
         />
         connect : {isConnected ? "connected" : "not connected yet"}

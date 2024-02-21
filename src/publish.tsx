@@ -31,7 +31,7 @@ export function Publish({ publish }: PublishProps) {
     <div style={{ border: "1px solid black" }}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <label htmlFor="topic">Topic</label>
-        <input {...register("topic", { required: true })} />
+        <input {...register("topic", { required: true })} id="topic" />
         <span style={{ color: "red" }}>{errors.topic?.message}</span>
         <label htmlFor="message">message</label>
         <textarea
@@ -42,6 +42,7 @@ export function Publish({ publish }: PublishProps) {
               value: 20,
             },
           })}
+          id="message"
         />
         <span style={{ color: "red" }}>{errors.message?.message}</span>
         <button type="submit">publish</button>

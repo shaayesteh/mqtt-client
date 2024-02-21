@@ -94,7 +94,7 @@ const INITIAL_STATE: IdleState = {
 
 const reducer = (
   _: MqttClientState,
-  action: MqttClientAction,
+  action: MqttClientAction
 ): MqttClientState => {
   switch (action.type) {
     case "connect":
